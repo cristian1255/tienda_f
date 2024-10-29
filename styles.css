@@ -1,0 +1,127 @@
+/* Estilos globales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #5a5a5a; /* Fondo neutro claro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Contenedor principal */
+.container {
+    width: 90%;
+    max-width: 500px;
+    background: linear-gradient(to bottom right, #ffffff, #f0f4f8); /* Degradado claro */
+    padding: 30px;
+    border-radius: 15px; /* Bordes más suaves */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Sombra más sutil */
+    transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2); /* Sombra al pasar el mouse */
+}
+
+/* Animación de aparición */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Título */
+h2, h1 {
+    text-align: center;
+    color: #000000;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* Estilos de formulario */
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #00796b; /* Verde oscuro */
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #000000; /* Borde verde oscuro */
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus {
+    border-color: #009688; /* Verde más claro al enfocar */
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 151, 136, 0.5);
+}
+
+/* Botones */
+button {
+    background-color: #2600ff;
+    color: #ffffff;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    width: calc(100% - 40px); /* Mantener el ancho completo menos el espacio para el punto */
+    margin-top: 10px; /* Espacio entre botones */
+    transition: background-color 0.3s;
+    position: relative; /* Para el pseudo-elemento */
+}
+
+button:hover, a.btn:hover {
+    background-color: #00ffd5af; /* Más oscuro al pasar el mouse */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Enlace a otras páginas */
+a {
+    display: block;
+    margin-top: 15px;
+    text-align: center;
+    color: #00796b;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #004d40; /* Verde más oscuro */
+}
+
+/* Grupo de botones */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 10px; /* Espaciado entre botones */
+}
+
+.button-group a, .button-group button {
+    flex: 1; /* Hacer que los botones ocupen el mismo espacio */
+}
+/* Estilo de la lista de botones */
+.button-group {
+    display: block; /* Cambiar a bloque para lista vertical */
+    margin-top: 20px; /* Espaciado superior */
+}
