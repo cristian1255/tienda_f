@@ -21,7 +21,7 @@ if (!verificarPermisos($perfil, 'categorias', 'ver')) {
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = ""; // Cambiar si es necesario
+$pass = "root"; // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
