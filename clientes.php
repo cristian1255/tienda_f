@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 // Lista de perfiles con permisos de acceso
 $perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Puedes modificar esta lista para incluir los perfiles autorizados
@@ -80,6 +80,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
+// Procesar la eliminación de un cliente
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'clientes', 'editar')) {
+        die("No tienes permiso para eliminar clientes.");
+    }
+
+    $cliente_id = $_POST['cliente_id'];
+
+    $sql = "DELETE FROM clientes WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $cliente_id);
+
+    if ($stmt->execute()) {
+        echo "Cliente eliminado exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 // Obtener registros de la tabla clientes
 $sql = "SELECT * FROM clientes";
 $result = $conn->query($sql);
@@ -135,6 +154,9 @@ $result = $conn->query($sql);
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-danger {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +192,6 @@ $result = $conn->query($sql);
             ?>">
                 <button type="submit" class="btn">Volver al menú</button>
             </form>
-            
         </div>
 
         <table>
@@ -180,7 +201,7 @@ $result = $conn->query($sql);
                 <th>Teléfono</th>
                 <th>Email</th>
                 <?php if (verificarPermisos($perfil, 'clientes', 'editar')): ?>
-                    <th>Acción</th> <!-- Columna para editar -->
+                    <th>Acción</th> <!-- Columna para editar y eliminar -->
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -207,6 +228,10 @@ $result = $conn->query($sql);
                                 <form method="POST" action="">
                                     <input type="hidden" name="cliente_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                </form>
+                                <form method="POST" action="" style="margin-top: 5px;">
+                                    <input type="hidden" name="cliente_id" value="<?php echo $row['id']; ?>">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-danger">
                                 </form>
                             </td>
                         <?php endif; ?>

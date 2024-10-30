@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 // Lista de perfiles con permisos de acceso
 $perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Puedes modificar esta lista para incluir los perfiles autorizados
@@ -35,7 +35,7 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
     if (!verificarPermisos($perfil, 'detalles_venta', 'editar')) {
         echo "<div style='text-align: center;'>
-                <p>No tienes permiso para agregar detalles de venta..</p>
+                <p>No tienes permiso para agregar detalles de venta.</p>
                 <form method='POST' action='detalles_venta.php'>
                     <button type='submit' class='btn'>Volver</button>
                 </form>
@@ -77,6 +77,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
 
     if ($stmt->execute()) {
         echo "Detalle de venta actualizado exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
+// Procesar la eliminación de un detalle de venta
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'detalles_venta', 'editar')) {
+        die("No tienes permiso para eliminar detalles de venta.");
+    }
+
+    $detalle_id = $_POST['detalle_id'];
+
+    $sql = "DELETE FROM detalles_venta WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $detalle_id);
+
+    if ($stmt->execute()) {
+        echo "Detalle de venta eliminado exitosamente.";
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -138,6 +157,9 @@ $result = $conn->query($sql);
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-danger {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
@@ -176,7 +198,6 @@ $result = $conn->query($sql);
             ?>">
                 <button type="submit" class="btn">Volver al menú</button>
             </form>
-            
         </div>
 
         <table>
@@ -187,7 +208,7 @@ $result = $conn->query($sql);
                 <th>Cantidad</th>
                 <th>Precio Unitario</th>
                 <?php if (verificarPermisos($perfil, 'detalles_venta', 'editar')): ?>
-                    <th>Acción</th> <!-- Columna para editar -->
+                    <th>Acción</th> <!-- Columna para editar y eliminar -->
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -202,7 +223,7 @@ $result = $conn->query($sql);
                                     <input type="number" name="producto_id" value="<?php echo $row['producto_id']; ?>" required>
                                     <input type="number" name="cantidad" value="<?php echo $row['cantidad']; ?>" required>
                                     <input type="number" step="0.01" name="precio_unitario" value="<?php echo $row['precio_unitario']; ?>" required>
-                                    <input type="submit" name="guardar" value="Guardar" class="btn">  <!-- Cambiado a 'guardar' -->
+                                    <input type="submit" name="guardar" value="Guardar" class="btn">
                                 </form>
                             <?php else: ?>
                                 <?php echo $row['venta_id']; ?>
@@ -216,6 +237,10 @@ $result = $conn->query($sql);
                                 <form method="POST" action="">
                                     <input type="hidden" name="detalle_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                </form>
+                                <form method="POST" action="">
+                                    <input type="hidden" name="detalle_id" value="<?php echo $row['id']; ?>">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-danger">
                                 </form>
                             </td>
                         <?php endif; ?>

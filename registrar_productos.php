@@ -1,4 +1,4 @@
-<?php 
+<?php  
 session_start();
 // Lista de perfiles con permisos de acceso
 $perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Puedes modificar esta lista para incluir los perfiles autorizados
@@ -82,6 +82,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
+// Procesar la eliminación de un producto
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'productos', 'editar')) {
+        die("No tienes permiso para eliminar productos.");
+    }
+
+    $producto_id = $_POST['producto_id'];
+    $sql = "DELETE FROM productos WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $producto_id);
+
+    if ($stmt->execute()) {
+        echo "Producto eliminado exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 // Obtener registros de la tabla productos
 $sql = "SELECT productos.id, productos.nombre_producto, categorias.nombre_categoria, proveedores.nombre_proveedor, productos.descripcion 
         FROM productos 
@@ -148,6 +166,12 @@ $result_proveedores = $conn->query($sql_proveedores);
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -194,7 +218,6 @@ $result_proveedores = $conn->query($sql_proveedores);
             ?>">
                 <button type="submit" class="btn">Volver al menú</button>
             </form>
-            
         </div>
 
         <table>
@@ -205,7 +228,7 @@ $result_proveedores = $conn->query($sql_proveedores);
                 <th>Proveedor</th>
                 <th>Descripción</th>
                 <?php if (verificarPermisos($perfil, 'productos', 'editar')): ?>
-                    <th>Acción</th> <!-- Columna para editar -->
+                    <th>Acciones</th> <!-- Columna para editar y eliminar -->
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -238,7 +261,7 @@ $result_proveedores = $conn->query($sql_proveedores);
                                             </option>
                                         <?php } ?>
                                     </select>
-                                    <input type="submit" name="guardar" value="Guardar" class="btn">  <!-- Cambiado a 'guardar' -->
+                                    <input type="submit" name="guardar" value="Guardar" class="btn">
                                 </form>
                             <?php else: ?>
                                 <?php echo $row['nombre_producto']; ?>
@@ -252,6 +275,7 @@ $result_proveedores = $conn->query($sql_proveedores);
                                 <form method="POST" action="">
                                     <input type="hidden" name="producto_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-delete" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?');">
                                 </form>
                             </td>
                         <?php endif; ?>

@@ -75,11 +75,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
+// Procesar la eliminación de una venta
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'ventas', 'editar')) {
+        die("No tienes permiso para eliminar ventas.");
+    }
+
+    $venta_id = $_POST['venta_id'];
+    $sql = "DELETE FROM ventas WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $venta_id);
+
+    if ($stmt->execute()) {
+        echo "Venta eliminada exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 // Obtener registros de la tabla ventas
 $sql = "SELECT ventas.id, ventas.fecha_venta, ventas.total, clientes.nombre_cliente, usuario.nombre_usuario 
         FROM ventas 
         INNER JOIN clientes ON ventas.cliente_id = clientes.id 
-        INNER JOIN usuario AS usuario ON ventas.usuario_id = usuario.id";
+        LEFT JOIN usuario AS usuario ON ventas.usuario_id = usuario.id"; // Cambiado a LEFT JOIN
 $result = $conn->query($sql);
 ?>
 
@@ -91,48 +109,16 @@ $result = $conn->query($sql);
     <title>Gestión de Ventas</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f7f7f7;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .btn {
-            padding: 10px;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f7f7f7; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 10px; color: white; background-color: #007bff; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #c82333; }
     </style>
 </head>
 <body>
@@ -153,19 +139,13 @@ $result = $conn->query($sql);
         <div class="button-group">
             <form method="POST" action="<?php 
                 // Determinar la acción según el perfil
-                if ($_SESSION['perfil'] === 'root') {
-                    echo 'root.php'; // Redirige al menú de root
-                } elseif ($_SESSION['perfil'] === 'secretaria') {
-                    echo 'secretaria.php'; // Redirige al menú de secretaria
-                } elseif ($_SESSION['perfil'] === 'gerente') {
-                    echo 'gerente.php'; // Redirige al menú de gerente
-                } elseif ($_SESSION['perfil'] === 'empleado') {
-                    echo 'empleado.php'; // Redirige al menú de empleado
-                }
+                if ($_SESSION['perfil'] === 'root') { echo 'root.php'; } 
+                elseif ($_SESSION['perfil'] === 'secretaria') { echo 'secretaria.php'; } 
+                elseif ($_SESSION['perfil'] === 'gerente') { echo 'gerente.php'; } 
+                elseif ($_SESSION['perfil'] === 'empleado') { echo 'empleado.php'; }
             ?>">
                 <button type="submit" class="btn">Volver al menú</button>
             </form>
-            
         </div>
 
         <table>
@@ -176,7 +156,8 @@ $result = $conn->query($sql);
                 <th>Nombre del Cliente</th>
                 <th>Usuario</th>
                 <?php if (verificarPermisos($perfil, 'ventas', 'editar')): ?>
-                    <th>Editar</th> <!-- Columna para editar -->
+                    <th>Editar</th>
+                    <th>Eliminar</th>
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -190,14 +171,14 @@ $result = $conn->query($sql);
                                     <input type="hidden" name="venta_id" value="<?php echo $row['id']; ?>">
                                     <input type="number" step="0.01" name="total" value="<?php echo $row['total']; ?>" required>
                                     <input type="number" name="cliente_id" value="<?php echo $row['cliente_id']; ?>" required>
-                                    <input type="submit" name="guardar" value="Guardar" class="btn">  <!-- Cambiado a 'guardar' -->
+                                    <input type="submit" name="guardar" value="Guardar" class="btn">
                                 </form>
                             <?php else: ?>
                                 <?php echo $row['total']; ?>
                             <?php endif; ?>
                         </td>
                         <td><?php echo $row['nombre_cliente']; ?></td>
-                        <td><?php echo $row['nombre_usuario']; ?></td>
+                        <td><?php echo isset($row['nombre_usuario']) ? $row['nombre_usuario'] : 'Usuario no asignado'; ?></td> <!-- Manejo de NULL -->
                         <?php if (verificarPermisos($perfil, 'ventas', 'editar')): ?>
                             <td>
                                 <form method="POST" action="">
@@ -205,11 +186,17 @@ $result = $conn->query($sql);
                                     <input type="submit" name="editar" value="Editar" class="btn">
                                 </form>
                             </td>
+                            <td>
+                                <form method="POST" action="">
+                                    <input type="hidden" name="venta_id" value="<?php echo $row['id']; ?>">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-delete">
+                                </form>
+                            </td>
                         <?php endif; ?>
                     </tr>
                 <?php } 
             } else {
-                echo "<tr><td colspan='6'>No hay ventas registradas.</td></tr>";
+                echo "<tr><td colspan='7'>No hay ventas registradas.</td></tr>";
             } ?>
         </table>
     </div>

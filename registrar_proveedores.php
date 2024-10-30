@@ -83,6 +83,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
+// Procesar la eliminación de un proveedor
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'proveedores', 'editar')) {
+        die("No tienes permiso para eliminar proveedores.");
+    }
+
+    $proveedor_id = $_POST['proveedor_id'];
+
+    $sql = "DELETE FROM proveedores WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $proveedor_id);
+
+    if ($stmt->execute()) {
+        echo "Proveedor eliminado exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 // Obtener registros de la tabla proveedores
 $sql = "SELECT * FROM proveedores";
 $result = $conn->query($sql);
@@ -138,6 +157,12 @@ $result = $conn->query($sql);
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-delete {
+            background-color: #dc3545; /* Color rojo para eliminar */
+        }
+        .btn-delete:hover {
+            background-color: #c82333; /* Color rojo más oscuro al pasar el mouse */
+        }
     </style>
 </head>
 <body>
@@ -176,7 +201,6 @@ $result = $conn->query($sql);
             ?>">
                 <button type="submit" class="btn">Volver al menú</button>
             </form>
-            
         </div>
 
         <table>
@@ -218,6 +242,7 @@ $result = $conn->query($sql);
                                 <form method="POST" action="">
                                     <input type="hidden" name="proveedor_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-delete"> <!-- Botón de eliminar -->
                                 </form>
                             </td>
                         <?php endif; ?>
