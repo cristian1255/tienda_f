@@ -80,6 +80,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
+// Procesar la eliminación de un registro
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'almacen', 'editar')) {
+        die("No tienes permiso para eliminar registros del almacén.");
+    }
+
+    $almacen_id = $_POST['almacen_id'];
+
+    $sql = "DELETE FROM almacen WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $almacen_id);
+
+    if ($stmt->execute()) {
+        echo "Registro eliminado exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
 // Obtener registros de la tabla almacen
 $sql = "SELECT * FROM almacen";
 $result = $conn->query($sql);
@@ -177,7 +196,7 @@ $result = $conn->query($sql);
                 <th>Cantidad</th>
                 <th>Fecha de Actualización</th>
                 <?php if (verificarPermisos($perfil, 'almacen', 'editar')): ?>
-                    <th>Acción</th> <!-- Columna para editar -->
+                    <th>Acción</th> <!-- Columna para editar y eliminar -->
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -203,6 +222,10 @@ $result = $conn->query($sql);
                                 <form method="POST" action="">
                                     <input type="hidden" name="almacen_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                </form>
+                                <form method="POST" action="" style="margin-top: 5px;">
+                                    <input type="hidden" name="almacen_id" value="<?php echo $row['id']; ?>">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn" style="background-color: red;">
                                 </form>
                             </td>
                         <?php endif; ?>
