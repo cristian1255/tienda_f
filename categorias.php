@@ -1,6 +1,15 @@
 <?php
 session_start();
- include 'permisos.php'; // Incluir el archivo de permisos
+// Lista de perfiles con permisos de acceso
+$perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Puedes modificar esta lista para incluir los perfiles autorizados
+
+// Verificar si el usuario tiene un perfil autorizado
+if (!in_array($_SESSION['perfil'], $perfiles_autorizados)) {
+    // Si el perfil no está autorizado, redirigir a login.php
+    header("Location: login.php");
+    exit();
+}
+include 'permisos.php'; // Incluir el archivo de permisos
 
 $perfil = $_SESSION['perfil'];
 
@@ -12,7 +21,7 @@ if (!verificarPermisos($perfil, 'categorias', 'ver')) {
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = "root";     // Cambiar si es necesario
+$pass = ""; // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -29,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
         echo "<div style='text-align: center;'>
                 <p>No tienes permiso para agregar categorías.</p>
                 <form method='POST' action='categorias.php'>
-                    <button type='submit' class='btn'>Volver a Categorias</button>
+                    <button type='submit' class='btn'>Volver a Categorías</button>
                 </form>
               </div>";
         exit();
@@ -68,7 +77,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['guardar'])) {
     }
 }
 
-// Obtener registros de la tabla categorias
+// Procesar la eliminación de una categoría
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar'])) {
+    if (!verificarPermisos($perfil, 'categorias', 'editar')) {
+        die("No tienes permiso para eliminar categorías.");
+    }
+
+    $categoria_id = $_POST['categoria_id'];
+
+    $sql = "DELETE FROM categorias WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $categoria_id);
+
+    if ($stmt->execute()) {
+        echo "Categoría eliminada exitosamente.";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+}
+
+// Obtener registros de la tabla categorías
 $sql = "SELECT * FROM categorias";
 $result = $conn->query($sql);
 ?>
@@ -123,6 +151,9 @@ $result = $conn->query($sql);
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-danger {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
@@ -159,7 +190,7 @@ $result = $conn->query($sql);
                 <th>ID</th>
                 <th>Nombre de la Categoría</th>
                 <?php if (verificarPermisos($perfil, 'categorias', 'editar')): ?>
-                    <th>Acción</th> <!-- Columna para editar -->
+                    <th>Acción</th> <!-- Columna para editar y eliminar -->
                 <?php endif; ?>
             </tr>
             <?php if ($result->num_rows > 0) {
@@ -182,6 +213,10 @@ $result = $conn->query($sql);
                                 <form method="POST" action="">
                                     <input type="hidden" name="categoria_id" value="<?php echo $row['id']; ?>">
                                     <input type="submit" name="editar" value="Editar" class="btn">
+                                </form>
+                                <form method="POST" action="" style="margin-top: 5px;">
+                                    <input type="hidden" name="categoria_id" value="<?php echo $row['id']; ?>">
+                                    <input type="submit" name="eliminar" value="Eliminar" class="btn btn-danger">
                                 </form>
                             </td>
                         <?php endif; ?>
