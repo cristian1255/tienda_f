@@ -1,7 +1,7 @@
 <?php 
 session_start();
 // Lista de perfiles con permisos de acceso
-$perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Puedes modificar esta lista para incluir los perfiles autorizados
+$perfiles_autorizados = ['root', 'secretaria', 'gerente', 'empleado']; // Modificar según los perfiles autorizados
 
 // Verificar si el usuario tiene un perfil autorizado
 if (!in_array($_SESSION['perfil'], $perfiles_autorizados)) {
@@ -21,7 +21,7 @@ if (!verificarPermisos($perfil, 'usuario', 'ver')) {
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = "12345";     // Cambiar si es necesario
+$pass = "root";     // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['agregar'])) {
     }
 
     $nombre_usuario = $_POST['nombre_usuario'];
-    $contraseña = $_POST['contraseña']; // No se encripta la contraseña
+    $contraseña = password_hash($_POST['contraseña'], PASSWORD_BCRYPT); // Encriptar la contraseña
     $perfil_usuario = $_POST['perfil']; // Variable corregida para el perfil
     $created_at = date('Y-m-d H:i:s'); // Fecha actual
 
@@ -130,6 +130,13 @@ $result = $conn->query($sql);
         h1 {
             text-align: center;
             color: #333;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         table {
             width: 100%;

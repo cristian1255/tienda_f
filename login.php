@@ -1,11 +1,10 @@
 <?php
-// Iniciar la sesión
 session_start();
 
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = "12345";     // Cambiar si es necesario
+$pass = "root"; // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -17,43 +16,49 @@ if ($conn->connect_error) {
 
 // Procesar el formulario de inicio de sesión
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $usuario = $_POST['nombre_usuario'];
-    $password = $_POST['contraseña'];
-    $perfil = $_POST['perfil'];
+    $nombre_usuario = trim($_POST['nombre_usuario']);
+    $contraseña = trim($_POST['contraseña']);
+    $perfil = trim($_POST['perfil']);
 
-    // Consulta para verificar las credenciales del usuario
-    $sql = "SELECT * FROM usuario WHERE nombre_usuario = ? AND contraseña = ? AND perfil = ?";
+    // Verificar si el usuario existe en la base de datos
+    $sql = "SELECT * FROM usuario WHERE nombre_usuario = ? AND perfil = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $usuario, $password, $perfil);
+    $stmt->bind_param("ss", $nombre_usuario, $perfil);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        // Usuario autenticado correctamente
-        $_SESSION['nombre_usuario'] = $usuario;
-        $_SESSION['perfil'] = $perfil;
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
 
-        // Redirigir según el perfil
-        switch ($perfil) {
-            case 'root':
-                header("Location: root.php");
-                break;
-            case 'secretaria':
-                header("Location: secretaria.php");
-                break;
-            case 'gerente':
-                header("Location: gerente.php");
-                break;
-            case 'empleado':
-                header("Location: empleado.php");
-                break;
-            default:
-                echo "Perfil no reconocido.";
+        // Verificar la contraseña usando password_verify
+        if (password_verify($contraseña, $row['contraseña'])) {
+            // Iniciar sesión y guardar datos en la sesión
+            $_SESSION['nombre_usuario'] = $nombre_usuario;
+            $_SESSION['perfil'] = $perfil;
+
+            // Redirigir según el perfil
+            switch ($perfil) {
+                case 'root':
+                    header("Location: root.php");
+                    break;
+                case 'secretaria':
+                    header("Location: secretaria.php");
+                    break;
+                case 'gerente':
+                    header("Location: gerente.php");
+                    break;
+                case 'empleado':
+                    header("Location: empleado.php");
+                    break;
+                default:
+                    $error = "Perfil no reconocido.";
+            }
+            exit();
+        } else {
+            $error = "Contraseña incorrecta.";
         }
-        exit();
     } else {
-        // Credenciales incorrectas
-        echo "Usuario o contraseña incorrectos.";
+        $error = "Usuario o perfil no encontrado.";
     }
 }
 ?>
@@ -82,6 +87,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 40px; /* Espaciado interno */
             width: 300px; /* Ancho del contenedor */
             text-align: center;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
 
         h2 {
@@ -130,24 +142,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="login-container">
-        <h2>Inicio de Sesión</h2>
+        <h1>Iniciar Sesión</h1>
+        <?php if (isset($error)): ?>
+            <div class="error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
         <form method="POST" action="">
-            <label for="nombre_usuario">Usuario:</label>
-            <input type="text" id="nombre_usuario" name="nombre_usuario" required>
-
-            <label for="contraseña">Contraseña:</label>
-            <input type="password" id="contraseña" name="contraseña" required>
-
-            <label for="perfil">Perfil:</label>
-            <select id="perfil" name="perfil" required>
-            <option value="selecciona">Seleciona perfil</option>
-                <option value="root">Root</option>
-                <option value="secretaria">Secretaria</option>
-                <option value="gerente">Gerente</option>
-                <option value="empleado">Empleado</option>
-            </select>
-
-            <input type="submit" value="Iniciar Sesión">
+            <div class="form-group">
+                <label for="nombre_usuario">Usuario:</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="contraseña">Contraseña:</label>
+                <input type="password" id="contraseña" name="contraseña" required>
+            </div>
+            <div class="form-group">
+                <label for="perfil">Perfil:</label>
+                <select id="perfil" name="perfil" required>
+                    <option value="">>>>>Selecciona tu Perfil<<<<</option>
+                    <option value="root">Root</option>
+                    <option value="secretaria">Secretaria</option>
+                    <option value="gerente">Gerente</option>
+                    <option value="empleado">Empleado</option>
+                </select>
+            </div>
+            <button type="submit">Iniciar Sesión</button>
         </form>
     </div>
 </body>

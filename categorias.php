@@ -21,7 +21,7 @@ if (!verificarPermisos($perfil, 'categorias', 'ver')) {
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = "12345"; // Cambiar si es necesario
+$pass = "root"; // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
@@ -123,6 +123,7 @@ $result = $conn->query($sql);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        
         h1 {
             text-align: center;
             color: #333;
