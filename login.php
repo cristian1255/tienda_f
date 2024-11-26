@@ -4,7 +4,7 @@ session_start();
 // Conexión a la base de datos
 $host = "localhost";
 $user = "root"; // Cambiar si es necesario
-$pass = "root"; // Cambiar si es necesario
+$pass = "12345"; // Cambiar si es necesario
 $dbname = "tienda-f";
 
 $conn = new mysqli($host, $user, $pass, $dbname);
