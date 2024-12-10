@@ -17,7 +17,7 @@ if ($_SESSION['perfil'] !== 'gerente') {
 <body>
 
     <div class="container">
-    <center><h1>Bienvenido, Cristian.</h1></center>
+    <center><h1>Bienvenido, Gerente.</h1></center>
         <!-- Botones de funcionalidades -->
         <div class="button-group">
             <a href="almacen.php" class="btn">Almacen(Inventario)</a>

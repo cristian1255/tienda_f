@@ -8,8 +8,8 @@ function verificarPermisos($perfil, $tabla, $accion) {
         'root' => ['ver' => '*', 'editar' => '*'],  // Root puede ver y editar todo
         'gerente' => [
             'ver' => '*', 
-            'editar' => ['clientes', 'productos', 'ventas', 'proveedores', 'almacen', 'detalles_venta', 'categorias']
-        ],  // Gerente puede ver todo y editar todo excepto la tabla de usuario
+            'editar' => ['clientes', 'productos', 'ventas', 'proveedores', 'almacen', 'detalles_venta', 'categorias', 'usuario']
+        ],  // Gerente puede ver todo y editar todo
         'secretaria' => [
             'ver' => ['clientes', 'productos', 'ventas', 'detalles_venta', 'categorias'],
             'editar' => ['clientes', 'productos', 'ventas', 'detalles_venta', 'categorias']
